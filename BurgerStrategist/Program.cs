@@ -15,7 +15,7 @@ namespace BurgerStrategist
     {
         static void Main(string[] args)
         {
-            UInt160 BNEO = UInt160.Parse("0x48c40d4666f93408be1bef038b6722404d9a4c2a");
+            UInt160 BNEO = UInt160.Parse("0x85deac50febfd93988d3f391dea54e8289e43e9e");
 
             List<UInt160> AGENTS = Enumerable.Range(0, 21).Select(v => BNEO.MakeScript("agent", v)).SelectMany(a => a).ToArray().Call().TakeWhile(v => v.IsNull == false).Select(v => v.ToU160()).ToList();
             (List<byte[]> CANDIDATES, List<BigInteger> CANDIDATE_VOTES) = NativeContract.NEO.Hash.MakeScript("getCandidates").Call().Single().ToVMArray().Select(v => v.ToVMStruct()).Map2(v => v.First().ToBytes(), v => v.Last().GetInteger());

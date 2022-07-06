@@ -12,7 +12,8 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
     - name: Install Dependences
-      run: npm install tweetsodium
+      run: |
+        npm install libsodium-wrappers
     - name: Generate Key
       run: echo "WIF=$(dotnet run --project KeyGenerator)" >> $GITHUB_ENV
     - name: GitHub Script
@@ -20,10 +21,10 @@ jobs:
       with:
         github-token: ${{ secrets.USERTOKEN }}
         script: |
-          const sodium = require('tweetsodium');
-          const [owner, repo, secret_name] = ['neoburger', 'TEE', 'TEEWIF']
+          const sodium = require('libsodium-wrappers');
+          const [owner, repo, secret_name] = ['neoburger', 'TEE-N3T5', 'TEEWIF']
           github.rest.actions.getRepoPublicKey({ owner, repo }).then(({ data }) => {
-              const encrypted_value = Buffer.from(sodium.seal(Buffer.from(process.env.WIF), Buffer.from(data.key, 'base64'))).toString('base64');
+              const encrypted_value = Buffer.from(sodium.crypto_box_seal(Buffer.from(process.env.WIF), Buffer.from(data.key, 'base64'))).toString('base64');
               const key_id = data.key_id;
               github.rest.actions.createOrUpdateRepoSecret({ owner, repo, secret_name, encrypted_value, key_id });
           });
