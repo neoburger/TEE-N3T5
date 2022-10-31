@@ -21,3 +21,12 @@ jobs:
         WIF: ${{ secrets.TEEWIF }}
         RPC: http://seed3t5.neo.org:20332
         THREASHOLD: 1000
+    - name: action-keepalive-check
+      run: |
+        if (( $(git --no-pager log -1 --format=%ct) < $(date --date "last month" +%s) )); then
+          git config --global user.email bot@neoburger.io
+          git config --global user.name bot
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/neoburger/TEE-N3T5.git
+          git commit --allow-empty -m "Dummy commit created to keep the repository active..."
+          git push origin HEAD
+        fi
