@@ -19,11 +19,11 @@ namespace BurgerClaimer
         {
             UInt160 BNEO = UInt160.Parse("0x85deac50febfd93988d3f391dea54e8289e43e9e");
             BigInteger BLOCKNUM = NativeContract.Ledger.Hash.MakeScript("currentIndex").Call().Single().GetInteger();
-            List<UInt160> AGENTS = Enumerable.Range(0, 21).Select(v => BNEO.MakeScript("agent", v)).SelectMany(a => a).ToArray().Call().TakeWhile(v => v.IsNull == false).Select(v => v.ToU160()).ToList();
+            List<UInt160> AGENTS = Enumerable.Range(0, 22).Select(v => BNEO.MakeScript("agent", v)).SelectMany(a => a).ToArray().Call().Where(v => v.IsNull == false).Select(v => v.ToU160()).ToList();
             $"BLOCKNUM: {BLOCKNUM}".Log();
             $"AGENTS: {String.Join(", ", AGENTS)}".Log();
 
-            List<BigInteger> UNCLAIMED = AGENTS.Select(v => NativeContract.NEO.Hash.MakeScript("unclaimedGas", v, BLOCKNUM+1).Call().Single().GetInteger()).ToList();
+            List<BigInteger> UNCLAIMED = AGENTS.Select(v => (BigInteger)v.GetUnclaimedGas()).ToList();
             List<BigInteger> GASBALANCE = AGENTS.Select(v => NativeContract.GAS.Hash.MakeScript("balanceOf", v).Call().Single().GetInteger()).ToList();
             List<BigInteger> MERGED = UNCLAIMED.Zip(GASBALANCE).Select(v => v.First > 10 ? v.First + v.Second : v.Second).ToList();
             $"UNCLAIMED: {String.Join(", ", UNCLAIMED)}".Log();
